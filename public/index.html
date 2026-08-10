@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XAUUSD Signal — Gold Trend &amp; Entry Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Au</span>
+      <div class="brand-text">
+        <h1>XAUUSD Signal Terminal</h1>
+        <p>Multi-timeframe trend &amp; supply/demand entry engine</p>
+      </div>
+    </div>
+    <div class="status" id="status">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Memuat data…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="chart-panel">
+      <div class="tradingview-widget-container">
+        <div id="tv_chart"></div>
+      </div>
+    </section>
+
+    <aside class="signal-panel" id="signalPanel">
+      <div class="panel-loading" id="panelLoading">Menganalisis market XAUUSD…</div>
+    </aside>
+  </main>
+
+  <footer class="disclaimer" id="disclaimerText">
+    Ini adalah alat bantu analisis teknikal otomatis, bukan nasihat keuangan. Selalu terapkan money management sendiri.
+  </footer>
+
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+    new TradingView.widget({
+      autosize: true,
+      symbol: "OANDA:XAUUSD",
+      interval: "60",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "id",
+      toolbar_bg: "#131722",
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: false,
+      container_id: "tv_chart"
+    });
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
