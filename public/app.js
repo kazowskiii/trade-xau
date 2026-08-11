@@ -9,34 +9,64 @@ function fmt(n) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function directionLabel(dir) {
-  if (dir === 'BULLISH') return 'BUY / BULLISH';
-  if (dir === 'BEARISH') return 'SELL / BEARISH';
-  return 'NEUTRAL / SIDEWAYS';
+function trendLabel(bias) {
+  if (bias === 'BULLISH') return 'TREND: BULLISH';
+  if (bias === 'BEARISH') return 'TREND: BEARISH';
+  return 'TREND: NEUTRAL / SIDEWAYS';
+}
+
+function trendClass(bias) {
+  if (bias === 'BULLISH') return 'bullish';
+  if (bias === 'BEARISH') return 'bearish';
+  return 'neutral';
+}
+
+function zoneLabel(zone) {
+  if (!zone) return '—';
+  return `${zone.type} (${zone.tf}) @ $${fmt(zone.price)}`;
+}
+
+function renderBreakdown(breakdown) {
+  return `
+    <div class="breakdown">
+      <h3>Rincian Analisis</h3>
+      <div class="breakdown-row"><span>Trend M1</span><span>${breakdown.m1Trend}</span></div>
+      <div class="breakdown-row"><span>Trend M5</span><span>${breakdown.m5Trend}</span></div>
+      <div class="breakdown-row"><span>Trend M15</span><span>${breakdown.m15Trend}</span></div>
+      <div class="breakdown-row"><span>Trend M30</span><span>${breakdown.m30Trend}</span></div>
+      <div class="breakdown-row"><span>Trend H1 (trend besar)</span><span>${breakdown.h1Trend}</span></div>
+      <div class="breakdown-row"><span>RSI (M1)</span><span>${breakdown.rsiM1 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>RSI (M5)</span><span>${breakdown.rsiM5 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>RSI (M15)</span><span>${breakdown.rsiM15 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>MACD Histogram (H1)</span><span>${breakdown.macdHistogramH1 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>Zona Resistance/Supply Terdekat</span><span>${zoneLabel(breakdown.nearestZoneAbove)}</span></div>
+      <div class="breakdown-row"><span>Zona Support/Demand Terdekat</span><span>${zoneLabel(breakdown.nearestZoneBelow)}</span></div>
+    </div>
+  `;
 }
 
 function render(data) {
-  if (data.direction === 'NEUTRAL') {
+  const trendBadge = `<span class="direction-badge ${trendClass(data.trendBias)}">${trendLabel(data.trendBias)}</span>`;
+  const priceRow = `
+    <div class="price-row">
+      <div class="label">Harga XAUUSD Saat Ini</div>
+      <div class="value">$${fmt(data.lastPrice)}</div>
+    </div>
+  `;
+
+  // Belum ada entry -> cuma tampilkan trend besar + alasan kenapa belum ada entry
+  if (data.entryStatus === 'WAITING_FOR_ZONE') {
     panel.innerHTML = `
-      <span class="direction-badge neutral">${directionLabel(data.direction)}</span>
-      <div class="price-row">
-        <div class="label">Harga XAUUSD Saat Ini</div>
-        <div class="value">$${fmt(data.lastPrice)}</div>
-      </div>
-      <div class="neutral-msg">${data.message}</div>
-      <div class="breakdown">
-        <h3>Rincian Trend</h3>
-        <div class="breakdown-row"><span>Trend M5</span><span>${data.breakdown.m5Trend}</span></div>
-        <div class="breakdown-row"><span>Trend M15</span><span>${data.breakdown.m15Trend}</span></div>
-        <div class="breakdown-row"><span>Trend M30</span><span>${data.breakdown.m30Trend}</span></div>
-        <div class="breakdown-row"><span>Trend H1 (utama)</span><span>${data.breakdown.h1Trend}</span></div>
-        <div class="breakdown-row"><span>RSI (M15)</span><span>${data.breakdown.rsiM15 ?? '—'}</span></div>
-      </div>
+      ${trendBadge}
+      ${priceRow}
+      <div class="neutral-msg">⏳ Belum ada entry BUY/SELL yang direkomendasikan.<br/>${data.message}</div>
+      ${renderBreakdown(data.breakdown)}
     `;
     return;
   }
 
-  const dirClass = data.direction === 'BULLISH' ? 'bullish' : 'bearish';
+  // Ada entry aktif -> tampilkan BUY/SELL terpisah dari badge trend besar
+  const entryClass = data.entrySignal === 'BUY' ? 'bullish' : 'bearish';
   const ticksFilled = data.confluenceScore;
   const ticksTotal = data.maxScore;
   const ticks = Array.from({ length: ticksTotal })
@@ -53,12 +83,18 @@ function render(data) {
     )
     .join('');
 
+  const counterTrendNote = data.isCounterTrend
+    ? `<div class="neutral-msg">⚠️ Entry ${data.entrySignal} ini melawan arah trend besar (${data.trendBias}) — ini koreksi/pullback jangka pendek, bukan perubahan trend. ${data.message}</div>`
+    : `<div class="neutral-msg">✅ ${data.message}</div>`;
+
   panel.innerHTML = `
-    <span class="direction-badge ${dirClass}">${directionLabel(data.direction)}</span>
-    <div class="price-row">
-      <div class="label">Harga XAUUSD Saat Ini</div>
-      <div class="value">$${fmt(data.lastPrice)}</div>
-    </div>
+    ${trendBadge}
+    ${priceRow}
+
+    <span class="direction-badge ${entryClass}">ENTRY: ${data.entrySignal}</span>
+    <div class="breakdown-row"><span>Zona Entry Aktif</span><span>${zoneLabel(data.activeZone)}</span></div>
+
+    ${counterTrendNote}
 
     <div class="gauge-section">
       <div class="gauge-label">
@@ -80,19 +116,7 @@ function render(data) {
       ${tpRows}
     </div>
 
-    <div class="breakdown">
-      <h3>Rincian Analisis</h3>
-      <div class="breakdown-row"><span>Trend M5</span><span>${data.breakdown.m5Trend}</span></div>
-      <div class="breakdown-row"><span>Trend M15</span><span>${data.breakdown.m15Trend}</span></div>
-      <div class="breakdown-row"><span>Trend M30</span><span>${data.breakdown.m30Trend}</span></div>
-      <div class="breakdown-row"><span>Trend H1 (utama)</span><span>${data.breakdown.h1Trend}</span></div>
-      <div class="breakdown-row"><span>RSI (M15)</span><span>${data.breakdown.rsiM15 ?? '—'}</span></div>
-      <div class="breakdown-row"><span>RSI (M5)</span><span>${data.breakdown.rsiM5 ?? '—'}</span></div>
-      <div class="breakdown-row"><span>MACD Histogram (H1)</span><span>${data.breakdown.macdHistogramH1 ?? '—'}</span></div>
-      <div class="breakdown-row"><span>Zona Support/Resistance</span><span>${data.breakdown.srConfluence ? 'Terkonfirmasi' : 'Tidak ada'}</span></div>
-      <div class="breakdown-row"><span>Zona Supply/Demand</span><span>${data.breakdown.sdConfluence ? 'Terkonfirmasi' : 'Tidak ada'}</span></div>
-      <div class="breakdown-row"><span>Zona Entry Terdekat</span><span>${data.breakdown.nearestZone ? `${data.breakdown.nearestZone.type} @ $${fmt(data.breakdown.nearestZone.price)}` : '—'}</span></div>
-    </div>
+    ${renderBreakdown(data.breakdown)}
   `;
 }
 
