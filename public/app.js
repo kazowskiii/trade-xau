@@ -26,10 +26,11 @@ function render(data) {
       <div class="neutral-msg">${data.message}</div>
       <div class="breakdown">
         <h3>Rincian Trend</h3>
-        <div class="breakdown-row"><span>Trend Daily</span><span>${data.breakdown.dailyTrend}</span></div>
-        <div class="breakdown-row"><span>Trend H4</span><span>${data.breakdown.h4Trend}</span></div>
-        <div class="breakdown-row"><span>Trend H1</span><span>${data.breakdown.h1Trend}</span></div>
-        <div class="breakdown-row"><span>RSI (H1)</span><span>${data.breakdown.rsi ?? '—'}</span></div>
+        <div class="breakdown-row"><span>Trend M5</span><span>${data.breakdown.m5Trend}</span></div>
+        <div class="breakdown-row"><span>Trend M15</span><span>${data.breakdown.m15Trend}</span></div>
+        <div class="breakdown-row"><span>Trend M30</span><span>${data.breakdown.m30Trend}</span></div>
+        <div class="breakdown-row"><span>Trend H1 (utama)</span><span>${data.breakdown.h1Trend}</span></div>
+        <div class="breakdown-row"><span>RSI (M15)</span><span>${data.breakdown.rsiM15 ?? '—'}</span></div>
       </div>
     `;
     return;
@@ -81,12 +82,16 @@ function render(data) {
 
     <div class="breakdown">
       <h3>Rincian Analisis</h3>
-      <div class="breakdown-row"><span>Trend Daily</span><span>${data.breakdown.dailyTrend}</span></div>
-      <div class="breakdown-row"><span>Trend H4</span><span>${data.breakdown.h4Trend}</span></div>
-      <div class="breakdown-row"><span>Trend H1</span><span>${data.breakdown.h1Trend}</span></div>
-      <div class="breakdown-row"><span>RSI (H1)</span><span>${data.breakdown.rsi ?? '—'}</span></div>
-      <div class="breakdown-row"><span>MACD Histogram (H1)</span><span>${data.breakdown.macdHistogram ?? '—'}</span></div>
-      <div class="breakdown-row"><span>Zona Multi-timeframe</span><span>${data.breakdown.zoneConfluence ? 'Terkonfirmasi' : 'Tidak ada'}</span></div>
+      <div class="breakdown-row"><span>Trend M5</span><span>${data.breakdown.m5Trend}</span></div>
+      <div class="breakdown-row"><span>Trend M15</span><span>${data.breakdown.m15Trend}</span></div>
+      <div class="breakdown-row"><span>Trend M30</span><span>${data.breakdown.m30Trend}</span></div>
+      <div class="breakdown-row"><span>Trend H1 (utama)</span><span>${data.breakdown.h1Trend}</span></div>
+      <div class="breakdown-row"><span>RSI (M15)</span><span>${data.breakdown.rsiM15 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>RSI (M5)</span><span>${data.breakdown.rsiM5 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>MACD Histogram (H1)</span><span>${data.breakdown.macdHistogramH1 ?? '—'}</span></div>
+      <div class="breakdown-row"><span>Zona Support/Resistance</span><span>${data.breakdown.srConfluence ? 'Terkonfirmasi' : 'Tidak ada'}</span></div>
+      <div class="breakdown-row"><span>Zona Supply/Demand</span><span>${data.breakdown.sdConfluence ? 'Terkonfirmasi' : 'Tidak ada'}</span></div>
+      <div class="breakdown-row"><span>Zona Entry Terdekat</span><span>${data.breakdown.nearestZone ? `${data.breakdown.nearestZone.type} @ $${fmt(data.breakdown.nearestZone.price)}` : '—'}</span></div>
     </div>
   `;
 }
